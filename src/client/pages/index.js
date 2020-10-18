@@ -1,53 +1,61 @@
-import Head from 'next/head'
-import styles from '../styles/Home.module.css'
+import { useEffect, useState } from 'react';
+import Head from 'next/head';
+import Post from '../components/post';
+import { Container, Header, Divider } from 'semantic-ui-react';
 
-export default function Home() {
+function HomePage() {
+
+  const client = require('contentful').createClient({
+    space: process.env.contentful_space_id,
+    accessToken: process.env.contentful_content_delivery_api
+  })
+
+  async function fetchEntries() {
+      const entries = await client.getEntries()
+      if (entries.items) return entries.items
+      console.log(`Error getting Entries for ${contentType.name}.`)
+  }
+
+  const [posts, setPosts] = useState([])
+
+  useEffect(() => {
+    async function getPosts() {
+      const allPosts = await fetchEntries()
+      setPosts([...allPosts])
+    }
+    getPosts()
+  }, [])
+
   return (
-    <div className={styles.container}>
+    <>
       <Head>
-        <title>Matt Keegan | Portfolio</title>
-        <link rel="icon" href="/favicon.ico" />
+        <title>Matt Keegan | Home</title>
+        <link
+          rel="stylesheet"
+          href="https://css.zeit.sh/v1.css"
+          type="text/css"
+        />
       </Head>
-
-      <main className={styles.main}>
-        <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Matt Keegan's portfolio!</a>
-        </h1>
-
-        <p className={styles.description}>
-          Work in progress...
-        </p>
-
-        <div className={styles.grid}>
-          <a href="https://nextjs.org/docs" className={styles.card}>
-            <h3>Documentation &rarr;</h3>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
-
-          <a href="https://nextjs.org/learn" className={styles.card}>
-            <h3>Learn &rarr;</h3>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/master/examples"
-            className={styles.card}
-          >
-            <h3>Examples &rarr;</h3>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
-
-          <a
-            href="https://vercel.com/import?filter=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-          >
-            <h3>Deploy &rarr;</h3>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
-        </div>
-      </main>
-    </div>
+      <Container>
+      <Header as="h1">
+        Matt Keegan
+      </Header>
+      <p>Hello world!</p>
+      <Divider horizontal />
+      {posts.length > 0
+        ? posts.map(p => (
+            <Post
+              date={p.fields.date}
+              key={p.fields.title}
+              image={p.fields.image}
+              title={p.fields.title}
+              url={p.fields.url}
+            />
+          ))
+        : null}
+      </Container>
+    </>
   )
 }
+
+export default HomePage;
